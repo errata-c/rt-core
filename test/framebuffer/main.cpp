@@ -66,12 +66,12 @@ int main() {
 				fb.bind();
 				glClear(GL_COLOR_BUFFER_BIT);
 
-				auto status = fb.status();
+				rt::FBStatus status = fb.status();
 				switch (status) {
-				case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+				case rt::FBStatus::IncompleteAttachment:
 					fmt::print("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT\n");
 					break;
-				case GL_FRAMEBUFFER_COMPLETE:
+				case rt::FBStatus::Complete:
 					fmt::print("GL_FRAMEBUFFER_COMPLETE\n");
 					break;
 				}

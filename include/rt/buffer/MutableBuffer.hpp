@@ -3,7 +3,7 @@
 
 namespace rt {
 
-	class MutableBuffer : public BufferBase {
+	class MutableBuffer : public Buffer {
 	public:
 		MutableBuffer(MutableType nType)
 			: type(nType)

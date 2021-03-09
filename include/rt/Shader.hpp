@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 #include <array>
+#include <limits>
 
 namespace rt {
 	enum class ShaderStage {
@@ -21,31 +22,38 @@ namespace rt {
 			: id(0)
 			, kind(t)
 		{
-			id = glCreateShader((GLenum)kind); checkError();
+			id = glCreateShader((GLenum)kind); 
+			checkError();
 		}
 		Shader(ShaderStage t, std::string_view source): id(0), kind(t)
 		{
-			id = glCreateShader((GLenum)kind); checkError();
+			id = glCreateShader((GLenum)kind); 
+			checkError();
 
 			addSource(source);
 		}
 
 		~Shader() {
 			if(id != 0) {
-				glDeleteShader(id); checkError();
+				glDeleteShader(id); 
+				checkError();
+				id = 0;
 			}
 		}
 
 		void addSource(std::string_view source) {
 			const char* sourcePtr = source.data();
-			GLint sourceLength = source.length();
+			assert(source.length() < std::numeric_limits<int>::max());
+			GLint sourceLength = static_cast<int>(source.length());
 
-			glShaderSource(id, 1, &sourcePtr, &sourceLength); checkError();
+			glShaderSource(id, 1, &sourcePtr, &sourceLength); 
+			checkError();
 		}
 
 		bool isCompiled() const {
 			GLint result = GL_FALSE;
-			glGetShaderiv(id, GL_COMPILE_STATUS, &result); checkError();
+			glGetShaderiv(id, GL_COMPILE_STATUS, &result); 
+			checkError();
 			return result == GL_TRUE;
 		}
 
@@ -78,11 +86,14 @@ namespace rt {
 
 		void reset() {
 			if(isValid()){
-				glDeleteShader(id); checkError();
-				id = glCreateShader((GLenum)kind); checkError();
+				glDeleteShader(id); 
+				checkError();
+				id = glCreateShader((GLenum)kind); 
+				checkError();
 			}
 			else {
-				id = glCreateShader((GLenum)kind); checkError();
+				id = glCreateShader((GLenum)kind); 
+				checkError();
 			}
 		}
 		void reset(ShaderStage stage) {
@@ -103,7 +114,8 @@ namespace rt {
 		}
 
 		bool verifyId() const {
-			int result = glIsShader(id); checkError();
+			int result = glIsShader(id); 
+			checkError();
 			return result == GL_TRUE;
 		}
 	protected:

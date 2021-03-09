@@ -30,22 +30,18 @@ int main() {
 			glm::vec2 pos;
 			glm::vec3 color;
 		};
-		rt::CoherentBuffer vertices(6 * sizeof(Vert));
+		std::array<Vert, 6> varr{
+			Vert{ glm::vec2{-1, +1}, glm::vec3{1, 0, 0} },
+			Vert{ glm::vec2{-1, -1}, glm::vec3{0, 1, 0} },
+			Vert{ glm::vec2{+1, +1}, glm::vec3{0, 0, 1} },
+
+			Vert{ glm::vec2{-1, -1}, glm::vec3{0, 1, 0} },
+			Vert{ glm::vec2{+1, -1}, glm::vec3{1, 0, 1} },
+			Vert{ glm::vec2{+1, +1}, glm::vec3{0, 0, 1} },
+		};
+
+		rt::ImmutableBuffer vertices(varr.data(), varr.size());
 		assert(vertices.isValid());
-
-		Vert* vptr = vertices.map<Vert>();
-		if (vptr != nullptr) {
-			vptr[0] = { glm::vec2{-1, +1}, glm::vec3{1, 0, 0} };
-			vptr[1] = { glm::vec2{-1, -1}, glm::vec3{0, 1, 0} };
-			vptr[2] = { glm::vec2{+1, +1}, glm::vec3{0, 0, 1} };
-
-			vptr[3] = { glm::vec2{-1, -1}, glm::vec3{0, 1, 0} };
-			vptr[4] = { glm::vec2{+1, -1}, glm::vec3{1, 0, 1} };
-			vptr[5] = { glm::vec2{+1, +1}, glm::vec3{0, 0, 1} };
-		}
-		else {
-			throw std::exception("No pointer returned when mapping vertices buffer.");
-		}
 
 		rt::VertexArray vao;
 		vao.attribFormatF32(0, 2, offsetof(Vert, pos));
@@ -66,6 +62,22 @@ int main() {
 		rt::Program program;
 		program.compile(vertShader, fragShader);
 		rt::printLastError();
+
+		{
+			GLint numUniforms = 0;
+			glGetProgramInterfaceiv(program.getId(), GL_UNIFORM, GL_ACTIVE_RESOURCES, &numUniforms);
+			const GLenum properties[4] = {GL_BLOCK_INDEX, GL_TYPE, GL_NAME_LENGTH, GL_LOCATION };
+			for (int i = 0; i < numUniforms; ++i) {
+				GLint values[4];
+				glGetProgramResourceiv(program.getId(), GL_UNIFORM, i, 4, properties, 4, NULL, values);
+
+				std::string nameData(values[2], '\0');
+				glGetProgramResourceName(program.getId(), GL_UNIFORM, i, nameData.size(), NULL, nameData.data());
+
+				std::cout << "name == " << nameData << "\n";
+				std::cout << "type == " << values[1] << "\n";
+			}
+		}
 
 		GLuint modelIndex = program.getUniformLocation("model");
 		rt::printLastError();

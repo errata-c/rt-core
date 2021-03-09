@@ -102,11 +102,11 @@ public:
 	};
 
 	ColoredQuadProgram()
-		: vertices(sizeof(verts))
+		: vertices(sizeof(verts), rt::BufferInit::Persistent | rt::BufferInit::Coherent | rt::BufferInit::Write)
 	{
 		assert(vertices.isValid());
 		{
-			void* vptr = vertices.map<void>();
+			void* vptr = vertices.map(rt::BufferFlag::Persistent | rt::BufferFlag::Coherent | rt::BufferFlag::Write);
 			assert(vptr != nullptr);
 			std::memcpy(vptr, verts.data(), sizeof(verts));
 			vertices.unmap();
@@ -146,7 +146,7 @@ public:
 	}
 
 	GLint uModel;
-	rt::CoherentBuffer vertices;
+	rt::ImmutableBuffer vertices;
 	rt::VertexArray vao;
 	rt::Program program;
 };
@@ -168,11 +168,11 @@ public:
 	};
 
 	TexturedQuadProgram() 
-		: vertices(sizeof(verts))
+		: vertices(sizeof(verts), rt::BufferInit::Persistent | rt::BufferInit::Coherent | rt::BufferInit::Write)
 	{
 		assert(vertices.isValid());
 		{
-			void* vptr = vertices.map<void>();
+			void* vptr = vertices.map(rt::BufferFlag::Persistent | rt::BufferFlag::Coherent | rt::BufferFlag::Write);
 			assert(vptr != nullptr);
 			std::memcpy(vptr, verts.data(), sizeof(verts));
 		}
@@ -213,7 +213,7 @@ public:
 	}
 
 	GLint uModel, uTex;
-	rt::CoherentBuffer vertices;
+	rt::ImmutableBuffer vertices;
 	rt::VertexArray vao;
 	rt::Program program;
 };

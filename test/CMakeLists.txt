@@ -2,6 +2,8 @@
 find_package(fmt CONFIG REQUIRED)
 find_package(SFML CONFIG REQUIRED COMPONENTS system window)
 
+find_package(rt-loader CONFIG REQUIRED COMPONENTS glew)
+
 add_library(test_framework INTERFACE)
 target_include_directories(test_framework
 INTERFACE
