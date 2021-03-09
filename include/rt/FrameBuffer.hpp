@@ -37,6 +37,17 @@ namespace rt {
 	public:
 		using Status = FrameBufferStatus;
 		using Attachment = FrameBufferAttachment;
+		
+		static GLuint CurrentReadId() {
+			GLint value = 0;
+			glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &value);
+			return value;
+		}
+		static GLuint CurrentDrawId() {
+			GLint value = 0;
+			glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &value);
+			return value;
+		}
 
 		static constexpr Status
 			Complete = Status::Complete,
@@ -50,11 +61,13 @@ namespace rt {
 			IncompleteRead = Status::IncompleteRead;
 
 		FrameBuffer() {
-			glCreateFramebuffers(1, &id); checkError();
+			glCreateFramebuffers(1, &id); 
+			checkError();
 		}
 		~FrameBuffer() {
 			if (isValid()) {
-				glDeleteFramebuffers(1, &id); checkError();
+				glDeleteFramebuffers(1, &id); 
+				checkError();
 				id = 0;
 			}
 		}
@@ -67,38 +80,46 @@ namespace rt {
 			checkError();
 			return res;
 		}
-		GLenum status() const {
+		FrameBufferStatus status() const {
 			GLenum tmp = glCheckNamedFramebufferStatus(id, GL_FRAMEBUFFER);
 			checkError();
-			return tmp;
+			return static_cast<FrameBufferStatus>(tmp);
 		}
 
-		void detatch(FBAttach attach) {
-			glNamedFramebufferRenderbuffer(id, (int)attach, GL_RENDERBUFFER, 0); checkError();
+		void detach(FBAttach attach) {
+			glNamedFramebufferRenderbuffer(id, (int)attach, GL_RENDERBUFFER, 0); 
+			checkError();
 		}
-		void detatchColor(GLint attachI) {
-			glNamedFramebufferRenderbuffer(id, GL_COLOR_ATTACHMENT0 + attachI, GL_RENDERBUFFER, 0); checkError();
+		void detachColor(GLint attachI) {
+			glNamedFramebufferRenderbuffer(id, GL_COLOR_ATTACHMENT0 + attachI, GL_RENDERBUFFER, 0); 
+			checkError();
 		}
 
 		void attachColor(Texture3dBase& tex, GLint attachI, GLint layer, GLint level = 0) {
-			glNamedFramebufferTextureLayer(id, GL_COLOR_ATTACHMENT0 + attachI, tex.getId(), level, layer); checkError();
+			glNamedFramebufferTextureLayer(id, GL_COLOR_ATTACHMENT0 + attachI, tex.getId(), level, layer); 
+			checkError();
 		}
 		void attach(Texture3dBase& tex, FBAttach attach, GLint layer, GLint level = 0) {
-			glNamedFramebufferTextureLayer(id, (int)attach, tex.getId(), level, layer); checkError();
+			glNamedFramebufferTextureLayer(id, (int)attach, tex.getId(), level, layer); 
+			checkError();
 		}
 
 		void attachColor(Texture2dBase & tex, GLint attachI, GLint level = 0) {
-			glNamedFramebufferTexture(id, GL_COLOR_ATTACHMENT0 + attachI, tex.getId(), level); checkError();
+			glNamedFramebufferTexture(id, GL_COLOR_ATTACHMENT0 + attachI, tex.getId(), level); 
+			checkError();
 		}
 		void attach(Texture2dBase & tex, FBAttach attach, GLint level = 0) {
-			glNamedFramebufferTexture(id, (int)attach, tex.getId(), level); checkError();
+			glNamedFramebufferTexture(id, (int)attach, tex.getId(), level); 
+			checkError();
 		}
 
 		void attachColor(RenderBuffer& tex, GLint attachI) {
-			glNamedFramebufferRenderbuffer(id, GL_COLOR_ATTACHMENT0 + attachI, GL_RENDERBUFFER, tex.getId()); checkError();
+			glNamedFramebufferRenderbuffer(id, GL_COLOR_ATTACHMENT0 + attachI, GL_RENDERBUFFER, tex.getId()); 
+			checkError();
 		}
 		void attach(RenderBuffer& tex, FBAttach attach) {
-			glNamedFramebufferRenderbuffer(id, (int)attach, GL_RENDERBUFFER, tex.getId()); checkError();
+			glNamedFramebufferRenderbuffer(id, (int)attach, GL_RENDERBUFFER, tex.getId()); 
+			checkError();
 		}
 
 		void blitTo(FrameBuffer& other, const glm::ivec2& read, const glm::ivec2& write, const glm::ivec2& region, FBMask mask = FBMask::All) {
@@ -121,26 +142,32 @@ namespace rt {
 
 		void bind() {
 			assert(isValid());
-			glBindFramebuffer(GL_FRAMEBUFFER, id); checkError();
+			glBindFramebuffer(GL_FRAMEBUFFER, id); 
+			checkError();
 		}
 		void unbind() {
-			glBindFramebuffer(GL_FRAMEBUFFER, 0); checkError();
+			glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+			checkError();
 		}
 
 		void bindRead() {
 			assert(isValid());
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, id); checkError();
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, id); 
+			checkError();
 		}
 		void unbindRead() {
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0); checkError();
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0); 
+			checkError();
 		}
 
 		void bindDraw() {
 			assert(isValid());
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, id); checkError();
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, id); 
+			checkError();
 		}
 		void unbindDraw() {
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); checkError();
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); 
+			checkError();
 		}
 
 		GLuint getId() const {

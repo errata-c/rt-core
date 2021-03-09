@@ -66,6 +66,7 @@ namespace rt {
 
 			handle = glGetTextureHandleARB(tex.getId());
 			checkError();
+
 			return true;
 		}
 
@@ -76,6 +77,7 @@ namespace rt {
 
 			handle = glGetTextureSamplerHandleARB(tex.getId(), samp.getId());
 			checkError();
+
 			return true;
 		}
 
@@ -83,7 +85,9 @@ namespace rt {
 			assert(isValid());
 
 			if (!resident) {
-				glMakeTextureHandleResidentARB(handle); checkError();
+				glMakeTextureHandleResidentARB(handle); 
+				checkError();
+
 				return true;
 			}
 			return false;
@@ -93,7 +97,9 @@ namespace rt {
 			assert(isValid());
 
 			if (resident) {
-				glMakeTextureHandleNonResidentARB(handle); checkError();
+				glMakeTextureHandleNonResidentARB(handle); 
+				checkError();
+
 				return true;
 			}
 			return false;

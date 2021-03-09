@@ -4,44 +4,43 @@
 namespace rt {
 	class MutableBuffer;
 
-	class ImmutableBuffer : public BufferBase {
+	class ImmutableBuffer : public Buffer {
 	public:
-		ImmutableBuffer(Flags f = Flags::None)
-			: flags(f)
+		ImmutableBuffer(Inits f = Inits::None)
 		{
-			assert(isValidInitializer(flags));
+			assert(isValidInitializer(f));
+			setFlags(f);
 		}
 
-		ImmutableBuffer(size_t length, Flags f)
-			: flags(f)
+		ImmutableBuffer(size_t length, Inits f = Inits::None)
 		{
-			assert(isValidInitializer(flags));
-
-			initArray(length, flags);
+			initArray(length, f);
 		}
 
 		~ImmutableBuffer() = default;
 
 		ImmutableBuffer(ImmutableBuffer&& other) noexcept
-			: BufferBase(std::move(other))
-			, flags(other.flags)
+			: Buffer(std::move(other))
+			, validFlags(other.validFlags)
 		{}
-		ImmutableBuffer(BufferBase&& other) noexcept
-			: BufferBase(std::move(other))
-			, flags(Flags::None)
+		ImmutableBuffer(Buffer&& other) noexcept
+			: Buffer(std::move(other))
+			, validFlags(Flags::None)
 		{
-			glGetNamedBufferParameteriv(id, GL_BUFFER_STORAGE_FLAGS, reinterpret_cast<GLint*>(&flags));
+			assert(other.isImmutable());
+			glGetNamedBufferParameteriv(id, GL_BUFFER_STORAGE_FLAGS, reinterpret_cast<GLint*>(&validFlags));
 			checkError();
 		}
 
 		ImmutableBuffer& operator=(ImmutableBuffer&& other) noexcept {
-			BufferBase::operator=(std::move(other));
-			flags = other.flags;
+			Buffer::operator=(std::move(other));
+			validFlags = other.validFlags;
 			return *this;
 		}
-		ImmutableBuffer& operator=(BufferBase&& other) noexcept {
-			BufferBase::operator=(std::move(other));
-			glGetNamedBufferParameteriv(id, GL_BUFFER_STORAGE_FLAGS, reinterpret_cast<GLint*>(&flags));
+		ImmutableBuffer& operator=(Buffer&& other) noexcept {
+			assert(other.isImmutable());
+			Buffer::operator=(std::move(other));
+			glGetNamedBufferParameteriv(id, GL_BUFFER_STORAGE_FLAGS, reinterpret_cast<GLint*>(&validFlags));
 			checkError();
 			return *this;
 		}
@@ -52,138 +51,92 @@ namespace rt {
 		ImmutableBuffer& operator=(const ImmutableBuffer&) = delete;
 
 		template<typename T>
-		ImmutableBuffer(const T* data, size_t length, GLbitfield f)
+		ImmutableBuffer(const T* data, size_t length, Inits f = Inits::None)
 		{
 			initArray(data, length, f);
 		}
 
 		template<typename T>
-		ImmutableBuffer(const T& obj, GLbitfield f)
+		ImmutableBuffer(const T& obj, Inits f = Inits::None)
 		{
-			initArray<T>(obj, f);
-		}
-
-		template<typename T>
-		ImmutableBuffer(const std::vector<T>& data, GLbitfield f)
-		{
-			initArray<T>(data, f);
-		}
-
-		template<typename T>
-		ImmutableBuffer(const std::vector<T>& data, intptr_t startIndex, size_t length, Flags f)
-		{
-			initArray<T>(data, startIndex, length, f);
+			initValue<T>(obj, f);
 		}
 
 		// Returns a pointer representing the data contents of the buffer, cast to the template type.
 		// Returns nullptr if the mapping fails.
-		template<typename T = void>
-		T* mapRange(intptr_t offset, GLsizeiptr length, Flags f) {
+		template<typename T = uint8_t>
+		T* mapRange(intptr_t offset, GLsizeiptr length, Flags flags) {
 			assert(checkFlags(flags)); // If you get this assertion, you have attempted a mapping that is not allowed on the current buffer.
-			T* tmp = (T*)glMapNamedBufferRange(id, offset * sizeof(T), length * sizeof(T), static_cast<GLbitfield>(flags));
-			checkError();
-			return tmp;
+			return Buffer::mapRange(offset, length, flags);
 		}
 		
 		// Returns a pointer representing the data contents of the buffer, cast to the template type.
 		// Returns nullptr if the mapping fails.
-		template<typename T = void>
-		T* map(Flags f) {
+		template<typename T = uint8_t>
+		T* map(Flags flags) {
 			assert(checkFlags(flags)); // If you get this assertion, you have attempted a mapping that is not allowed on the current buffer.
-			T* tmp = (T*)glMapNamedBufferRange(id, 0, byteSize, static_cast<GLbitfield>(flags));
-			checkError();
-			return tmp;
+			return Buffer::map<T>(flags);
 		}
 
 		// Returns a pointer representing the data contents of the buffer, cast to the template type.
 		// Returns nullptr if the mapping fails.
-		template<typename T = void>
+		template<typename T = uint8_t>
 		const T* mapRange(intptr_t offset, GLsizeiptr length, Flags flags) const {
 			assert(checkFlags(flags)); // If you get this assertion, you have attempted a mapping that is not allowed on the current buffer.
-			assert(boundsCheckBytes(offset * sizeof(T), length * sizeof(T)));
-			T* tmp = (T*)glMapNamedBufferRange(id, offset * sizeof(T), length * sizeof(T), static_cast<GLbitfield>(flags));
-			checkError();
-			return tmp;
+			return Buffer::mapRange<T>(offset, length, flags);
 		}
 
 		// Returns a pointer representing the data contents of the buffer, cast to the template type.
 		// Returns nullptr if the mapping fails.
-		template<typename T = void>
+		template<typename T = uint8_t>
 		const T* map(Flags flags) const {
 			assert(checkFlags(flags)); // If you get this assertion, you have attempted a mapping that is not allowed on the current buffer.
-			T* tmp = (T*)glMapNamedBufferRange(id, 0, byteSize, static_cast<GLbitfield>(flags));
-			checkError();
-			return tmp;
-		}
-
-		// Attempts to unmap the buffer, returns true if successful.
-		bool unmap() {
-			bool val = static_cast<bool>(glUnmapNamedBuffer(id));
-			checkError();
-			return val;
+			return Buffer::map<T>(flags);
 		}
 
 		// Initialize the array to the input length in bytes, set the base flags.
-		void initArray(size_t length, Flags f) {
-			this->flags = f;
-			BufferBase::initArray(length, f);
+		void initArray(size_t length, Inits f) {
+			Buffer::initArray(length, f);
+			setFlags(f);
 		}
 
 		// Initialize the array to the input c-data, set the base flags.
 		template<typename T>
-		void initArray(const T* data, size_t length, Flags f) {
-			this->flags = f;
-			BufferBase::initArray(data, length, f);
+		void initArray(const T* data, size_t length, Inits f) {
+			Buffer::initArray(data, length, f);
+			setFlags(f);
 		}
 
 		// Initialize the buffer to the value of the object input, set the base flags.
 		// Note that this is a direct copy of the object's underlying data, only use this if you know the object is standard layout.
 		template<typename T>
-		void initValue(const T& obj, Flags f) {
-			this->flags = f;
-			BufferBase::initValue(obj, f);
-		}
-
-		// Initialize the buffer to the contents of the input vector. Vector is supported because it has contiguous storage. 
-		template<typename T>
-		void initArray(const std::vector<T>& data, Flags f) {
-			this->flags = f;
-			BufferBase::initArray(data, f);
-		}
-
-		// Initialize the buffer to a slice of the input vector. Vector is supported because it has contiguous storage. 
-		template<typename T>
-		void initArray(const std::vector<T>& data, intptr_t startIndex, size_t length, Flags f) {
-			this->flags = f;
-			BufferBase::initArray(data, startIndex, length, f);
-		}
-
-		static bool isValidMapping(Flags flags) {
-			// Read and invalidate is not allowed.
-			if (allOf(flags, Flags::Read) && anyOf(flags, Flags::InvalidateBuffer | Flags::InvalidateRange)) {
-				return false;
-			}
-
-			// Flush requires Write.
-			if (allOf(flags, Flags::FlushExplicit) && !allOf(flags, Flags::Write)) {
-				return false;
-			}
-
-			return true;
+		void initValue(const T& obj, Inits f) {
+			Buffer::initValue(obj, f);
+			setFlags(f);
 		}
 	private:
-		Flags flags;
+		Flags validFlags;
 
-		bool checkFlags(Flags mapFlags) const {
-			if (!isValidMapping(mapFlags)) {
+		static constexpr Flags Mask = 
+			Flags{ Flag::Read } |
+			Flags{ Flag::Write } |
+			Flags{ Flag::Coherent } |
+			Flags{ Flag::Persistent } |
+			Flags{ Flag::Unsyncronized };
+
+		void setFlags(Inits inits) noexcept {
+			validFlags = Flags::fromRawValue(inits.rawValue()) & Mask;
+		}
+		bool checkFlags(Flags flags) const noexcept {
+			// Coherent requires persistent
+			if (flags.contains(Flag::Coherent) && !flags.contains(Flag::Persistent)) {
 				return false;
 			}
-
-			// if a mapping flag is not allowed by the initializer flags:
-			if (!allOf(mapFlags, flags)) {
+			Flags invalidFlags = ~validFlags;
+			Flags checkable = flags & Mask;
+			if (checkable.anyOf(invalidFlags)) {
 				return false;
 			}
-
 			return true;
 		}
 	};

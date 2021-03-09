@@ -15,7 +15,8 @@ set(BUILD_TESTS OFF CACHE BOOL "Build the tests for ${PACK_NAME} library.")
 find_package(ez-cmake CONFIG REQUIRED)
 
 find_package(glm REQUIRED CONFIG)
-find_package(rt-loader CONFIG REQUIRED COMPONENTS glew)
+find_package(rt-loader CONFIG REQUIRED)
+find_package(ez-bitflags CONFIG REQUIRED)
 
 # create main render-tools target
 add_library(rt-core INTERFACE)
@@ -31,7 +32,7 @@ INTERFACE # Define these as being required interface components for our library,
 target_compile_features(rt-core INTERFACE cxx_std_17)
 
 # vector maths and opengl support
-target_link_libraries(rt-core INTERFACE glm rt::loader)
+target_link_libraries(rt-core INTERFACE glm rt::loader ez::bitflags)
 
 # Quiet certain unnecessary warnings.
 target_compile_options(rt-core INTERFACE "$<BUILD_INTERFACE:$<$<CXX_COMPILER_ID:MSVC>:/permissive->>")

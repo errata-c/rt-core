@@ -25,10 +25,10 @@ int main() {
 			glm::vec2 pos;
 			glm::vec3 color;
 		};
-		rt::CoherentBuffer vertices(6 * sizeof(Vert));
+		rt::ImmutableBuffer vertices(6 * sizeof(Vert), rt::BufferInit::Persistent | rt::BufferInit::Coherent | rt::BufferInit::Write);
 		assert(vertices.isValid());
 
-		Vert* vptr = vertices.map<Vert>();
+		Vert* vptr = vertices.map<Vert>(rt::BufferFlag::Persistent | rt::BufferFlag::Coherent | rt::BufferFlag::Write);
 		
 		if (vptr != nullptr) {
 			vptr[0] = { glm::vec2{-1, +1}, glm::vec3{1, 0, 0} };

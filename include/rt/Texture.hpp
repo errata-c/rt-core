@@ -26,6 +26,7 @@ namespace rt {
         ~TextureBase() {
             if (isValid()) {
                 glDeleteTextures(1, &id);
+                id = 0;
             }
         }
 
@@ -35,6 +36,7 @@ namespace rt {
         TextureBase& operator=(TextureBase&& other) noexcept {
             if (isValid()) {
                 glDeleteTextures(1, &id);
+                checkError();
             }
             id = other.id;
             minFilter = other.minFilter;
@@ -89,22 +91,26 @@ namespace rt {
 
         GLint getRedSwizzle() const {
             GLint index = 0;
-            glGetTextureParameteriv(id, GL_TEXTURE_SWIZZLE_R, &index); checkError();
+            glGetTextureParameteriv(id, GL_TEXTURE_SWIZZLE_R, &index); 
+            checkError();
             return index - GL_TEXTURE_SWIZZLE_R;
         }
         GLint getGreenSwizzle() const {
             GLint index = 0;
-            glGetTextureParameteriv(id, GL_TEXTURE_SWIZZLE_G, &index); checkError();
+            glGetTextureParameteriv(id, GL_TEXTURE_SWIZZLE_G, &index); 
+            checkError();
             return index - GL_TEXTURE_SWIZZLE_R;
         }
         GLint getBlueSwizzle() const {
             GLint index = 0;
-            glGetTextureParameteriv(id, GL_TEXTURE_SWIZZLE_B, &index); checkError();
+            glGetTextureParameteriv(id, GL_TEXTURE_SWIZZLE_B, &index); 
+            checkError();
             return index - GL_TEXTURE_SWIZZLE_R;
         }
         GLint getAlphaSwizzle() const {
             GLint index = 0;
-            glGetTextureParameteriv(id, GL_TEXTURE_SWIZZLE_A, &index); checkError();
+            glGetTextureParameteriv(id, GL_TEXTURE_SWIZZLE_A, &index); 
+            checkError();
             return index - GL_TEXTURE_SWIZZLE_R;
         }
 
@@ -117,11 +123,13 @@ namespace rt {
         }
 
         void bindUnit(GLuint texUnit) {
-            glBindTextureUnit(texUnit, id); checkError();
+            glBindTextureUnit(texUnit, id); 
+            checkError();
         }
 
         void generateMipmaps() {
-            glGenerateTextureMipmap(id); checkError();
+            glGenerateTextureMipmap(id); 
+            checkError();
 
             switch (minFilter) {
             case GL_LINEAR:
@@ -132,11 +140,13 @@ namespace rt {
                 break;
             }
 
-            glTextureParameterIuiv(id, GL_TEXTURE_MIN_FILTER, &minFilter); checkError();
+            glTextureParameterIuiv(id, GL_TEXTURE_MIN_FILTER, &minFilter); 
+            checkError();
         }
 
         void invalidate(GLint level) {
-            glInvalidateTexImage(id, level); checkError();
+            glInvalidateTexImage(id, level); 
+            checkError();
         }
 
         void filterLinear() {
@@ -151,8 +161,10 @@ namespace rt {
                 minFilter = GL_LINEAR;
                 break;
             }
-            glTextureParameterIuiv(id, GL_TEXTURE_MIN_FILTER, &minFilter); checkError();
-            glTextureParameterIuiv(id, GL_TEXTURE_MAG_FILTER, &magFilter); checkError();
+            glTextureParameterIuiv(id, GL_TEXTURE_MIN_FILTER, &minFilter); 
+            checkError();
+            glTextureParameterIuiv(id, GL_TEXTURE_MAG_FILTER, &magFilter); 
+            checkError();
         }
         void filterNearest() {
             magFilter = GL_NEAREST;
@@ -166,8 +178,10 @@ namespace rt {
                 minFilter = GL_NEAREST;
                 break;
             }
-            glTextureParameterIuiv(id, GL_TEXTURE_MIN_FILTER, &minFilter); checkError();
-            glTextureParameterIuiv(id, GL_TEXTURE_MAG_FILTER, &magFilter); checkError();
+            glTextureParameterIuiv(id, GL_TEXTURE_MIN_FILTER, &minFilter); 
+            checkError();
+            glTextureParameterIuiv(id, GL_TEXTURE_MAG_FILTER, &magFilter); 
+            checkError();
         }
         
         void setBorderColor(float r, float g, float b) {
@@ -236,20 +250,23 @@ namespace rt {
 
         GLenum getGLTarget() const {
             GLint value = 0;
-            glGetTextureParameteriv(id, GL_TEXTURE_TARGET, &value); checkError();
+            glGetTextureParameteriv(id, GL_TEXTURE_TARGET, &value); 
+            checkError();
             return *reinterpret_cast<GLenum*>(&value);
         }
     protected:
         void enableMipmapFilters() {
             if (minFilter != GL_LINEAR_MIPMAP_LINEAR) {
                 minFilter = GL_LINEAR_MIPMAP_LINEAR;
-                glTextureParameterIuiv(id, GL_TEXTURE_MIN_FILTER, &minFilter); checkError();
+                glTextureParameterIuiv(id, GL_TEXTURE_MIN_FILTER, &minFilter); 
+                checkError();
             }
         }
         void disableMipmapFilters() {
             if (minFilter == GL_LINEAR_MIPMAP_LINEAR) {
                 minFilter = GL_LINEAR;
-                glTextureParameterIuiv(id, GL_TEXTURE_MIN_FILTER, &minFilter); checkError();
+                glTextureParameterIuiv(id, GL_TEXTURE_MIN_FILTER, &minFilter); 
+                checkError();
             }
         }
 
@@ -266,7 +283,8 @@ namespace rt {
             , depth(0)
         {
             assert(texType == GL_TEXTURE_3D || texType == GL_TEXTURE_2D_ARRAY);
-            glCreateTextures(texType, 1, &id); checkError();
+            glCreateTextures(texType, 1, &id); 
+            checkError();
         }
         ~Texture3dBase() = default;
 
@@ -387,14 +405,16 @@ namespace rt {
             , height(0)
         {
             assert(texType == GL_TEXTURE_2D || texType == GL_TEXTURE_1D_ARRAY || texType == GL_TEXTURE_2D_MULTISAMPLE);
-            glCreateTextures(texType, 1, &id); checkError();
+            glCreateTextures(texType, 1, &id); 
+            checkError();
         }
         Texture2dBase(GLenum texType, GLint w, GLint h)
             : width(w)
             , height(h)
         {
             assert(texType == GL_TEXTURE_2D || texType == GL_TEXTURE_1D_ARRAY || texType == GL_TEXTURE_2D_MULTISAMPLE);
-            glCreateTextures(texType, 1, &id); checkError();
+            glCreateTextures(texType, 1, &id); 
+            checkError();
         }
         ~Texture2dBase() = default;
 
@@ -503,9 +523,9 @@ namespace rt {
         Texture1dBase(GLenum texType)
             : width(0)
         {
-            glCreateTextures(texType, 1, &id); checkError();
+            glCreateTextures(texType, 1, &id); 
+            checkError();
         }
-        ~Texture1dBase() = default;
 
         Texture1dBase(const Texture1dBase&) = delete;
         Texture1dBase& operator=(const Texture1dBase&) = delete;
@@ -525,7 +545,8 @@ namespace rt {
 
         void invalidate(GLint level, GLint offset, GLint region) {
             assert(level >= 0);
-            glInvalidateTexSubImage(id, level, offset, 0, 0, region, 1, 1); checkError();
+            glInvalidateTexSubImage(id, level, offset, 0, 0, region, 1, 1); 
+            checkError();
         }
 
         void copyTo(Texture1dBase& other, GLint readLevel, GLint writeLevel, GLint read, GLint write, GLint region) {
@@ -616,15 +637,20 @@ namespace rt {
             //GLenum compEnum = convertGL(extractComponent(format));
             GLenum formEnum = convertGL(format);
 
-            glTextureStorage2D(id, mipLevels, formEnum, size.x, size.y); checkError();
+            glTextureStorage2D(id, mipLevels, formEnum, size.x, size.y); 
+            checkError();
             width = size.x;
             height = size.y;
         }
 
         void reset() {
             if (isValid()) {
-                glDeleteTextures(1, &id); checkError();
-                glCreateTextures(GL_TEXTURE_2D, 1, &id); checkError();
+                glDeleteTextures(1, &id); 
+                checkError();
+
+                glCreateTextures(GL_TEXTURE_2D, 1, &id); 
+                checkError();
+
                 width = 0;
                 height = 0;
             }
@@ -647,11 +673,6 @@ namespace rt {
             : Texture3dBase(GL_TEXTURE_2D_ARRAY)
         {
             init(form, mipLevels, size);
-        }
-
-        ~Texture2DArray()
-        {
-            glDeleteTextures(1, &id);
         }
 
         Texture2DArray(const Texture2DArray&) = delete;
@@ -677,8 +698,12 @@ namespace rt {
 
         void reset() {
             if (isValid()) {
-                glDeleteTextures(1, &id); checkError();
-                glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &id); checkError();
+                glDeleteTextures(1, &id); 
+                checkError();
+
+                glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &id); 
+                checkError();
+
                 width = 0;
                 height = 0;
                 depth = 0;
@@ -703,8 +728,6 @@ namespace rt {
             init(comp, form, levels, size);
         }
 
-        ~ImmutableTexture3d() = default;
-
         ImmutableTexture3d(const ImmutableTexture3d&) = delete;
         ImmutableTexture3d& operator=(const ImmutableTexture3d&) = delete;
         
@@ -717,7 +740,9 @@ namespace rt {
             format = form;
             GLenum formEnum = convertGL(format);
 
-            glTextureStorage3D(id, mipLevels, formEnum, size.x, size.y, size.z); checkError();
+            glTextureStorage3D(id, mipLevels, formEnum, size.x, size.y, size.z); 
+            checkError();
+
             width = size.x;
             height = size.y;
             depth = size.z;
@@ -725,8 +750,12 @@ namespace rt {
 
         void reset() {
             if (isValid()) {
-                glDeleteTextures(1, &id); checkError();
-                glCreateTextures(GL_TEXTURE_3D, 1, &id); checkError();
+                glDeleteTextures(1, &id); 
+                checkError();
+
+                glCreateTextures(GL_TEXTURE_3D, 1, &id); 
+                checkError();
+
                 width = 0;
                 height = 0;
                 depth = 0;

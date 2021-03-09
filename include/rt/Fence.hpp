@@ -23,7 +23,9 @@ namespace rt {
 		{}
 		~Fence() {
 			if (obj != nullptr) {
-				glDeleteSync(obj); checkError();
+				glDeleteSync(obj); 
+				checkError();
+				obj = nullptr;
 			}
 		}
 
@@ -59,7 +61,8 @@ namespace rt {
 		void waitServer(bool flush = true) {
 			assert(isValid());
 
-			glWaitSync(obj, 0, GL_TIMEOUT_IGNORED); checkError();
+			glWaitSync(obj, 0, GL_TIMEOUT_IGNORED); 
+			checkError();
 
 			if (flush) {
 				glFlush(); checkError();
@@ -73,7 +76,8 @@ namespace rt {
 			else {
 				int value = 0;
 				GLsizei count = 0;
-				glGetSynciv(obj, GL_SYNC_STATUS, 1, &count, &value); checkError();
+				glGetSynciv(obj, GL_SYNC_STATUS, 1, &count, &value); 
+				checkError();
 				return value == GL_SIGNALED;
 			}
 		}
@@ -83,14 +87,16 @@ namespace rt {
 				return false;
 			}
 			else {
-				obj = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0); checkError();
+				obj = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0); 
+				checkError();
 				return obj != nullptr;
 			}
 		}
 
 		void reset() {
 			if (isValid()) {
-				glDeleteSync(obj); checkError();
+				glDeleteSync(obj); 
+				checkError();
 				obj = nullptr;
 			}
 		}
@@ -101,7 +107,8 @@ namespace rt {
 
 		static uint64_t getServerTimeout() {
 			int64_t value = 0;
-			glGetInteger64v(GL_MAX_SERVER_WAIT_TIMEOUT, &value); checkError();
+			glGetInteger64v(GL_MAX_SERVER_WAIT_TIMEOUT, &value); 
+			checkError();
 			return static_cast<uint64_t>(value);
 		}
 	private:

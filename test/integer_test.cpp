@@ -200,7 +200,7 @@ void main() {
 		glUseProgram(programId);
 		glBindVertexArray(vaoId);
 #else
-		vbo.initArray(indices, sizeof(indices) / sizeof(index_t), BufferFlags::Dynamic);
+		vbo.initArray(indices, sizeof(indices) / sizeof(index_t), rt::BufferInit::Dynamic);
 		vao.bindVertex(vbo, 0, 0, sizeof(index_t));
 		
 		program.bind();

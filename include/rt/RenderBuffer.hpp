@@ -81,13 +81,16 @@ namespace rt {
 
 			width = size.x;
 			height = size.y;
-			glNamedRenderbufferStorageMultisample(id, samples, formEnum, width, height); checkError();
+			glNamedRenderbufferStorageMultisample(id, samples, formEnum, width, height); 
+			checkError();
 		}
 
 		void reset() {
 			if (isValid()) {
-				glDeleteRenderbuffers(1, &id); checkError();
-				glCreateRenderbuffers(1, &id); checkError();
+				glDeleteRenderbuffers(1, &id); 
+				checkError();
+				glCreateRenderbuffers(1, &id); 
+				checkError();
 				width = 0;
 				height = 0;
 			}
