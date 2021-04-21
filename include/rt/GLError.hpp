@@ -1,6 +1,6 @@
 #pragma once
 #include "Core.hpp"
-#include <iostream>
+#include <fmt/core.h>
 
 namespace rt {
 	namespace intern {
@@ -48,7 +48,7 @@ namespace rt {
 #ifdef RENDER_TOOLS_ERROR_CHECKS
 		uint32_t code = glGetError();
 		if (code != GL_NO_ERROR) {
-			std::cerr << "OpenGL error encountered: '" << getErrorString(code) << "'\n";
+			fmt::print(stderr, "OpenGL error encountered!\n{}\n", getErrorString(code));
 			throw std::exception(getErrorString(code).data());
 		}
 #endif

@@ -6,15 +6,16 @@ DESCRIPTION "OpenGL 4.5 helper classes"
 LANGUAGES CXX)
 
 include(GNUInstallDirs)
+include("cmake/ez-cmake/install_package.cmake")
 
-set(PACK_NAME "rt-core")
-set(CONFIG_DIR "${CMAKE_INSTALL_DATAROOTDIR}/${PACK_NAME}" CACHE STRING "The relative directory to install ${PACK_NAME} package config files.")
-set(BUILD_TESTS OFF CACHE BOOL "Build the tests for ${PACK_NAME} library.")
+option(BUILD_TESTS "Build the test executables" ON)
+option(SEPARATE_DIRECTORY "Install the package into its own directory" ON)
+set(CONFIG_DIR "${CMAKE_INSTALL_DATAROOTDIR}/ez-gui" CACHE STRING "The relative directory to install package config files.")
 
-# Find dependencies:
-find_package(ez-cmake CONFIG REQUIRED)
 
-find_package(glm REQUIRED CONFIG)
+
+find_package(fmt CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
 find_package(rt-loader CONFIG REQUIRED)
 find_package(ez-bitflags CONFIG REQUIRED)
 
@@ -32,14 +33,19 @@ INTERFACE # Define these as being required interface components for our library,
 target_compile_features(rt-core INTERFACE cxx_std_17)
 
 # vector maths and opengl support
-target_link_libraries(rt-core INTERFACE glm rt::loader ez::bitflags)
+target_link_libraries(rt-core INTERFACE glm::glm rt::loader ez::bitflags fmt::fmt)
 
 # Quiet certain unnecessary warnings.
 target_compile_options(rt-core INTERFACE "$<BUILD_INTERFACE:$<$<CXX_COMPILER_ID:MSVC>:/permissive->>")
 
 set_target_properties(rt-core PROPERTIES EXPORT_NAME "core")
 
-if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
+# Build tests, if requested.
+if(${BUILD_TESTS})
+	add_subdirectory("test")
+endif()
+
+if(SEPARATE_DIRECTORY)
 	set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/rt-core)
 endif()
 
@@ -68,7 +74,3 @@ install_package(
 	ARCH_INDEPENDENT
 )
 
-# Build tests, if requested.
-if(${BUILD_TESTS})
-	add_subdirectory("test")
-endif()

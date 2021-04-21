@@ -235,6 +235,15 @@ public:
 		return tmp;
 	}
 
+
+	UniformType getUniformType(GLint index) const {
+		GLenum prop = GL_TYPE;
+		GLint param;
+		glGetProgramResourceiv(id, GL_UNIFORM, index, 1, &prop, 1, NULL, &param);
+		return static_cast<UniformType>(param);
+	}
+
+
 	void bindUBOIndex(GLint uboIndex, GLuint bindingIndex) {
 		glUniformBlockBinding(id, uboIndex, bindingIndex);
 	}
