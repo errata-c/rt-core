@@ -3,15 +3,17 @@ Opengl 4.5 utilities
 
 Provides a number of classes for opengl types, using the direct state access api of OpenGL 4.5
 
-CMake
+### CMake
 ```cmake
 find_package(rt-core CONFIG REQUIRED)
 
 target_link_libraries(foo PRIVATE rt::core)
 ```
 
-C++
-```c++
+
+### C++
+
+```cpp
 #include <rt/rt.hpp>
 
 int main(int argc, char* argv[]) {

@@ -24,6 +24,7 @@ configure_file("include/config.hpp.in" "${CMAKE_CURRENT_LIST_DIR}/include/config
 add_subdirectory("basic")
 
 add_subdirectory("framebuffer")
+add_subdirectory("textures")
 
 add_executable(integer_test "integer_test.cpp")
 target_link_libraries(integer_test PRIVATE test_framework)

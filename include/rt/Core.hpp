@@ -39,4 +39,13 @@ namespace rt {
 	static GLenum convertGL(Index index) noexcept {
 		return static_cast<GLenum>(index);
 	}
+
+	static bool bindlessTexturesSupported() {
+		bool macro_exists = false;
+#if defined(GL_ARB_bindless_texture)
+		macro_exists = true;
+#endif
+
+		return macro_exists;
+	}
 }
